@@ -1,0 +1,30 @@
+{
+    "name": "celervel/celervel",
+    "description": "Celery Laravel integrations",
+    "keywords": ["celery", "laravel", "framework", "eloquent", "queue", "rabbitmq", "amqp", "python", "cron", "task"],
+    "type": "library",
+    "homepage": "https://github.com/jonbwhite/celervel",
+    "license": "BSD-3-Clause",
+    "authors": [
+        {
+            "name": "Jon Whiteaker",
+            "email": "JWhiteaker@urthecast.com",
+            "role": "Developer"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/jonbwhite/celervel/issues"
+    },
+    "require": {
+        "php": ">=5.4.0",
+        "illuminate/support": "~4.2",
+        "illuminate/queue": "5.1.*",
+        "jjbubudi/celery-php": "2.0.*"
+    },
+    "autoload": {
+        "psr-0": {
+            "Celervel\\": "src/"
+        }
+    },
+    "minimum-stability": "dev"
+}
