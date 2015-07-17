@@ -2,11 +2,12 @@
 
 class Celery extends \Celery
 {
+	protected $connection_details = array();
     function __construct($host, $login, $password, $vhost, $exchange='celery', $binding='celery', $port=5672, $connector=false, $persistent_messages=false, $result_expire=0, $ssl_options = array() )
     {
         parent::__construct($host, $login, $password, $vhost, $exchange, $binding, $port, $connector, $persistent_messages, $result_expire, $ssl_options);
         $this->default_connection_details = $this->connection_details;
-i   }
+    }
     /**
      * Post a task to Celery
      * @param string $task Name of the task, prefixed with module name (like tasks.add for function add() in task.py)

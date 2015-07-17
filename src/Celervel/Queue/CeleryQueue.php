@@ -1,9 +1,8 @@
 <?php namespace Celervel;
 
 use Illuminate\Queue\Queue;
-use Illuminate\Contracts\Queue\Queue as QueueContract;
 
-class CeleryQueue extends Queue implements QueueContract {
+class CeleryQueue extends Queue {
 
     /**
      * @param Celery         $celery
@@ -33,7 +32,7 @@ class CeleryQueue extends Queue implements QueueContract {
         }
 
         // push job to a queue
-        $task = $this->PostTask($job, [], true, "celery", $data);
+        $task = $this->connection->PostTask($job, [], true, "celery", $data);
 
         return $task;
     }

@@ -38,6 +38,6 @@ class CeleryConnector implements ConnectorInterface
             $config['ssl_options']
         );
 
-        return new CeleryQueue($connection, $config);
+        return new CeleryQueue($celery, $config);
     }
 }
