@@ -18,7 +18,7 @@
     "require": {
         "php": ">=5.4.0",
         "illuminate/support": "~4.2",
-        "illuminate/queue": "5.1.*",
+        "illuminate/queue": "~4.2",
         "jjbubudi/celery-php": "2.0.*"
     },
     "autoload": {
