@@ -1,6 +1,7 @@
 <?php namespace Celervel;
 
 use Illuminate\Queue\Queue;
+use Illuminate\Queue\QueueInterface;
 
 class CeleryQueue extends Queue {
 
@@ -24,17 +25,39 @@ class CeleryQueue extends Queue {
      *
      * @return mixed
      */
-    public function pushRaw($job, $data, $queue = null, array $options = [])
+    public function pushRaw($payload, $queue = null, array $options = [])
     {
         // Set queue if supplied, but don't override if in data
-        if ($queue && !isset($data['queue'])) {
-            $data['queue'] = $queue;
+        if ($queue && !isset($payload['queue'])) {
+            $payload['queue'] = $queue;
         }
 
         // push job to a queue
-        $task = $this->connection->PostTask($job, [], true, "celery", $data);
+        $task = $this->connection->PostTask($payload["task"], [], true, "celery", $payload);
 
         return $task;
+    }
+
+    /**
+     * Create a payload string from the given job and data.
+     *
+     * @param  string  $job
+     * @param  mixed   $data
+     * @param  string  $queue
+     * @return string
+     */
+    protected function createPayload($job, $data, $queue = null)
+    {
+        if ($job instanceof Closure)
+        {
+            throw new Exception("Not implemented");
+        }
+        // Set queue if supplied, but don't override if in data
+        if ($queue && !isset($payload['queue'])) {
+            $payload['queue'] = $queue;
+        }
+        $data['task'] = $job;
+        return json_encode($data);
     }
 
     /**
@@ -48,7 +71,7 @@ class CeleryQueue extends Queue {
      */
     public function push($job, $data = array(), $queue = null)
     {
-        return $this->pushRaw($job, $data, $queue, []);
+        return $this->pushRaw($this->createPayload($job, $data), $queue, []);
     }
 
     /**
