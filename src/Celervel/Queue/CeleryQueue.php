@@ -3,7 +3,7 @@
 use Illuminate\Queue\Queue;
 use Illuminate\Queue\QueueInterface;
 
-class CeleryQueue extends Queue {
+class CeleryQueue extends Queue implements QueueInterface {
 
     /**
      * @param Celery         $celery

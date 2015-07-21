@@ -23,12 +23,15 @@ class Celery extends \Celery
         if (isset($task_args['queue'])) {
             $this->connection_details['exchange'] = $task_args['queue'];
             $this->connection_details['binding'] = $task_args['queue'];
+            unset($task_args['queue']);
         }
         if (isset($task_args['exchange'])) {
             $this->connection_details['exchange'] = $task_args['exchange'];
+            unset($task_args['exchange']);
         }
         if (isset($task_args['routing_key'])) {
             $routing_key = $task_args['routing_key'];
+            unset($task_args['routing_key']);
         }
 
         $result = parent::PostTask($task, $args, $async_result, $routing_key, $task_args);
