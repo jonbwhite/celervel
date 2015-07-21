@@ -46,18 +46,23 @@ class CeleryQueue extends Queue implements QueueInterface {
      * @param  string  $queue
      * @return string
      */
-    protected function createPayload($job, $data, $queue = null)
+    protected function createPayload($job, $data = '', $queue = null)
     {
         if ($job instanceof Closure)
         {
             throw new Exception("Not implemented");
         }
+        if (!is_array($data))
+        {
+            throw new Exception("Data must be an array");
+        }
+            
         // Set queue if supplied, but don't override if in data
         if ($queue && !isset($payload['queue'])) {
             $payload['queue'] = $queue;
         }
         $data['task'] = $job;
-        return json_encode($data);
+        return $data;
     }
 
     /**
