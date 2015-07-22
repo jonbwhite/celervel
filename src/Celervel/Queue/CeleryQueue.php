@@ -58,8 +58,8 @@ class CeleryQueue extends Queue implements QueueInterface {
         }
             
         // Set queue if supplied, but don't override if in data
-        if ($queue && !isset($payload['queue'])) {
-            $payload['queue'] = $queue;
+        if ($queue && !isset($data['queue'])) {
+            $data['queue'] = $queue;
         }
         $data['task'] = $job;
         return $data;
