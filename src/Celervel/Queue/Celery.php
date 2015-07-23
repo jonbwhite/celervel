@@ -23,6 +23,7 @@ class Celery extends \Celery
         if (isset($task_args['queue'])) {
             $this->connection_details['exchange'] = $task_args['queue'];
             $this->connection_details['binding'] = $task_args['queue'];
+            $routing_key = $task_args['queue'];
             unset($task_args['queue']);
         }
         if (isset($task_args['exchange'])) {
