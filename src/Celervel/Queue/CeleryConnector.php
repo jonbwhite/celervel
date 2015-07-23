@@ -1,4 +1,4 @@
-<?php namespace Celervel;
+<?php namespace Celervel\Queue;
 
 use Illuminate\Queue\Connectors\ConnectorInterface;
 

@@ -1,6 +1,7 @@
 <?php namespace Celervel;
 
 use Illuminate\Support\ServiceProvider;
+use Celervel\Queue\CeleryConnector;
 
 
 class CeleryQueueServiceProvider extends ServiceProvider {

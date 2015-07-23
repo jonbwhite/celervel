@@ -1,4 +1,4 @@
-<?php namespace Celervel;
+<?php namespace Celervel\Queue;
 
 class Celery extends \Celery
 {

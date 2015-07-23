@@ -1,4 +1,4 @@
-<?php namespace Celervel;
+<?php namespace Celervel\Queue;
 
 use Illuminate\Queue\Queue;
 use Illuminate\Queue\QueueInterface;
