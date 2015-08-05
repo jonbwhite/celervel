@@ -33,7 +33,7 @@ class CeleryQueue extends Queue implements QueueInterface {
         }
 
         // push job to a queue
-        $task = $this->connection->PostTask($payload["task"], [], true, "celery", $payload);
+        $task = $this->connection->postTask($payload["task"], $payload);
 
         return $task;
     }
