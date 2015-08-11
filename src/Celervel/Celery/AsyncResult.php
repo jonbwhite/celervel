@@ -1,188 +1,9 @@
-<?php namespace Celervel\Queue;
-
-use PhpAmqpLib\Connection\AMQPConnection;
-use PhpAmqpLib\Message\AMQPMessage;
-
-class Celery
-{
-	protected $config = array(); // array of strings required to connect
-
-    function __construct($config)
-    {
-        $this->config = array(
-            'default_exchange' => 'celery',
-            'default_queue' => 'celery',
-            'default_routing_key' => 'celery',
-        );
-
-        $this->config = array_merge($this->config, $config);
-
-        //$this->broker = $this->getBroker();
-        //$this->backend = $this->getBackend();
-
-    }
-
-    /**
-     * Get an AMQP connection from stored settings
-     * @return AMQPConnection
-     */
-	function getBroker()
-	{
-		return new AMQPConnection(
-            $this->config['broker']['host'],
-			$this->config['broker']['port'],
-			$this->config['broker']['login'],
-			$this->config['broker']['password'],
-			$this->config['broker']['vhost']
-		);
-	}
-
-    /**
-     * Get a MongoDb connection from stored settings
-     * @return MongoConnection
-     */
-	function getBackend()
-	{
-        $connection = new \MongoClient($this->config['backend']['host']);
-        $db = $connection->selectDB($this->config['backend']['database']); 
-        $collection = new \MongoCollection($db, $this->config['backend']['collection']); 
-        return $collection;
-	}
-
-    /**
-     * Post a task to Celery
-     * @param string $task Name of the task, prefixed with module name (like tasks.add for function add() in task.py)
-     * @param array $args Array of arguments (args, kwargs)
-     * TODO: @return AsyncResult
-     */
-    function postTask($task, $args=[])
-    {
-        // Allow tasks to specify queue, exchange, and routing_key in the task details
-        // TODO: should routing_key be a default param? also rename queue to queue
-        $queue = $this->config['default_queue'];
-        $exchange = $this->config['default_exchange'];
-        $routing_key = $this->config['default_routing_key'];
-
-        if (isset($args['queue'])) {
-            $queue = $args['queue'];
-            $exchange = $args['queue'];
-            $routing_key = $args['queue'];
-            unset($args['queue']);
-        }
-        if (isset($args['exchange'])) {
-            $exchange = $args['exchange'];
-            unset($args['exchange']);
-        }
-        if (isset($args['routing_key'])) {
-            $routing_key = $args['routing_key'];
-            unset($args['routing_key']);
-        }
-
-		$id = uniqid('php_', TRUE);
-
-		$task_array = array_merge(
-			array(
-				'id' => $id,
-				'task' => $task,
-			),
-			$args
-		);
-
-		$task_body = json_encode($task_array);
-        $params = $this->buildParams();
-
-        $ch = $this->declareTask($queue, $exchange, $routing_key);
-		$msg = new AMQPMessage($task_body, $params);
-		$ch->basic_publish($msg, $exchange, $routing_key);
-		$ch->close();
-
-        // TODO: Async result
-        return new AsyncResult($id, $this);
-
-    }
-
-    /**
-     * Declare queue/exchange/routing_key
-     * @param string $queue Name of the queue
-     * @param string $exchange Name of the exchange
-     * @param string $routing_key Name of the routing key
-     * @return channel
-     */
-    function declareTask($queue, $exchange, $routing_key)
-    {
-		$ch = $this->broker->channel();
-
-		$ch->queue_declare(
-			$queue,      	        /* queue name */
-			false,					/* passive */
-			true,					/* durable */
-			false,					/* exclusive */
-			false					/* auto_delete */
-		);
-
-		$ch->exchange_declare(
-			$exchange,	            /* exchange name */
-			'direct',				/* type */
-			false,					/* passive */
-			true,					/* durable */
-			false					/* auto_delete */
-		);
-
-		$ch->queue_bind($queue, $exchange, $routing_key);
-
-        return $ch;
-
-    }
-
-    /**
-     * Build AMQP message params
-     * @return array
-     */
-    function buildParams()
-    {
-        $params = array('content_type' => 'application/json',
-			'content_encoding' => 'UTF-8',
-			'immediate' => false,
-		 );
-
-        /*
-		if($this->config['persistent_messages'])
-		{
-			$params['delivery_mode'] = 2;
-        }
-         */
-
-        return $params;
-    }
-
-    /**
-     * Get AsyncResult, return false if it doesn't exist
-     * @return array || false
-     */
-    function getAsyncResult($task_id)
-    {
-        $backend = $this->getBackend();
-        $decoded = false;
-        $raw = $backend->findOne(['_id' => $task_id]);
-        if ($raw) {
-            $decoded = array(
-                'task_id' => $raw['_id'],
-                'status' => $raw['status'],
-                'result' => json_decode($raw['result']->bin, true),
-                'date_done' => $raw['date_done']->toDateTime(),
-                'traceback' => json_decode($raw['traceback']->bin, true),
-                'children' => json_decode($raw['children']->bin, true),
-            );
-        }
-        return $decoded;
-    }
-}
+<?php namespace Celervel\Celery;
 
 /*
  * Asynchronous result of Celery task
- * @package celery-php
  */
-class AsyncResult 
+class AsyncResult
 {
     protected $task_id; // string, queue name
     protected $celery; // Celery instance
@@ -210,8 +31,8 @@ class AsyncResult
             return $this->body;
         }
 
-        $this->body = $this->celery->getAsyncResult($this->task_id);
-        
+        $this->body = $this->celery->getBackend()->getResult($this->task_id);
+
         return $this->body;message;
     }
     /**
@@ -219,17 +40,17 @@ class AsyncResult
      */
     static protected function getmicrotime()
     {
-            list($usec, $sec) = explode(" ",microtime());
-            return ((float)$usec + (float)$sec); 
+        list($usec, $sec) = explode(" ",microtime());
+        return ((float)$usec + (float)$sec); 
     }
     /**
      * Get the Task Id
      * @return string
      */
-     function getId()
-     {
+    function getId()
+    {
         return $this->task_id;
-     }
+    }
     /**
      * Check if a task result is ready
      * @return bool
@@ -315,15 +136,15 @@ class AsyncResult
         $start_time = self::getmicrotime();
         while(self::getmicrotime() - $start_time < $timeout)
         {
-                if($this->isReady())
-                {
-                        break;
-                }
-                usleep($interval_us);
+            if($this->isReady())
+            {
+                break;
+            }
+            usleep($interval_us);
         }
         if(!$this->isReady())
         {
-                throw new CeleryTimeoutException(sprintf('AMQP task %s(%s) did not return after %d seconds', $this->task_name, json_encode($this->task_args), $timeout), 4);
+            throw new CeleryTimeoutException(sprintf('AMQP task %s(%s) did not return after %d seconds', $this->task_name, json_encode($this->task_args), $timeout), 4);
         }
         return $this->getResult();
     }
@@ -412,3 +233,4 @@ class AsyncResult
         return $this->get($timeout, $propagate, $interval);
     }
 }
+
