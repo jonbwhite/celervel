@@ -94,6 +94,8 @@ class Celery
             array(
                 'id' => $id,
                 'task' => $task,
+                'args' => array(),
+                'kwargs' => (object) array(),
                 'queue' => $queue,
                 'exchange' => $exchange,
                 'routing_key' => $routing_key,
@@ -107,6 +109,21 @@ class Celery
 
         return $result;
 
+    }
+
+    function apply($signature) {
+        $fun = $this->tasks[$signature['task']];
+        $status = 'SUCCESS';
+        $result = null;
+        $traceback = null;
+        try {
+            $result = call_user_func_array($fun, $signature['args']);
+        } catch (\Exception $e) {
+            $traceback = debug_backtrace();
+            $status = 'FAILED';
+        }
+        $this->backend->storeResult($signature['id'], $result, $status, $traceback);
+        return $result;
     }
 
 
