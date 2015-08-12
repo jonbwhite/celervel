@@ -36,5 +36,25 @@ class MongoBackend extends Backend
         }
         return $decoded;
     }
+
+    /**
+     * Post task results to the backend
+     * @return result
+     */
+    function storeResult($task_id, $result, $status, $traceback=null, $request=null)
+    {
+        $meta = array(
+            '_id' => $task_id,
+            'status' => $status,
+            'result' => new \MongoBinData(json_encode($result, JSON_UNESCAPED_SLASHES), 0),
+            'date_done' => new \MongoDate(),
+            'traceback' => new \MongoBinData(json_encode($traceback, JSON_UNESCAPED_SLASHES), 0),
+            'children' => new \MongoBinData(json_encode($request, JSON_UNESCAPED_SLASHES), 0),
+        );
+        $this->collection->save($meta);
+
+        return $result;
+    }
+
 }
 

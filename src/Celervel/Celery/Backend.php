@@ -12,5 +12,11 @@ abstract class Backend
      * @return array || false
      */
     abstract function getResult($task_id);
+
+    /**
+     * Post task results to the backend
+     * @return result
+     */
+    abstract function storeResult($task_id, $result, $status, $traceback=null, $request=null);
 }
 
