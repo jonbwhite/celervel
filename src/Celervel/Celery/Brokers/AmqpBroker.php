@@ -41,7 +41,7 @@ class AmqpBroker extends Broker {
      * @param string $routing_key Name of the routing key
      * @return channel
      */
-    function declareTask($queue, $exchange, $routing_key)
+    function declareQueue($queue, $exchange, $routing_key)
     {
         $ch = $this->connection->channel();
 
@@ -101,11 +101,25 @@ class AmqpBroker extends Broker {
         unset($signature['queue']);
         unset($signature['exchange']);
         unset($signature['routing_key']);
-        $task_body = json_encode($signature);
+        $task_body = json_encode($signature, JSON_UNESCAPED_SLASHES);
 
-        $ch = $this->declareTask($queue, $exchange, $routing_key);
+        $ch = $this->declareQueue($queue, $exchange, $routing_key);
         $msg = new AMQPMessage($task_body, $params);
         $ch->basic_publish($msg, $exchange, $routing_key);
         $ch->close();
+    }
+
+    /**
+     * Consume tasks from the broker
+     * @return null | task signatures
+     */
+    function consume($queue, $exchange, $routing_key)
+    {
+        $ch = $this->declareQueue($queue, $exchange, $routing_key);
+        $msg = $ch->basic_get($queue);
+        if ($msg instanceof AMQPMessage) {
+            return json_decode($msg->body, true);
+        }
+        return null;
     }
 }
