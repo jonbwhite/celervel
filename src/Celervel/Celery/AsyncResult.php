@@ -33,7 +33,7 @@ class AsyncResult
 
         $this->body = $this->celery->getBackend()->getResult($this->task_id);
 
-        return $this->body;message;
+        return $this->body;
     }
     /**
      * Helper function to return current microseconds time as float 
