@@ -1,9 +1,9 @@
 <?php namespace Celervel\Queue;
 
 use Illuminate\Queue\Queue;
-use Illuminate\Queue\QueueInterface;
+use Illuminate\Contracts\Queue\Queue as QueueContract;
 
-class CeleryQueue extends Queue implements QueueInterface {
+class CeleryQueue extends Queue implements QueueContract {
 
     /**
      * @param Celery         $celery
@@ -106,4 +106,32 @@ class CeleryQueue extends Queue implements QueueInterface {
         throw new Exception("Not implemented");
     }
 
+    /**
+     * Push a new job onto the queue.
+     * 
+     * @param string $queue
+     * @param  string $job
+     * @param  mixed $data
+     * 
+     * @return mixed
+     */
+    public function pushOn($queue, $job, $data='') 
+    {
+        throw new Exception("Not implemented");
+    }
+
+    /**
+     * Push a new job onto the queue after a delay.
+     * 
+     * @param string $queue
+     * @param  Datetime|int $delay
+     * @param  string $job
+     * @param  mixed $data
+     * 
+     * @return mixed
+     */
+    public function laterOn($queue, $delay, $job, $data='') 
+    {
+        throw new Exception("Not implemented");
+    }
 }
