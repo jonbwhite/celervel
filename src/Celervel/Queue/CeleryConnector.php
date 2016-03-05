@@ -1,6 +1,7 @@
 <?php namespace Celervel\Queue;
 
 use Illuminate\Queue\Connectors\ConnectorInterface;
+use Celervel\Celery\Celery;
 
 class CeleryConnector implements ConnectorInterface
 {
